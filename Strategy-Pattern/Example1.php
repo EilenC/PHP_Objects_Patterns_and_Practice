@@ -1,7 +1,5 @@
 <?php
 
-use think\db\Query;
-
 abstract class Question {
     protected $prompt;
     protected $marker;
@@ -36,7 +34,7 @@ abstract class Marker {
     abstract function mark($response);
 }
 
-abstract class MarkLogicMarker extends Marker{
+class MarkLogicMarker extends Marker{
     private $engine;
 
     function __construct($test)
@@ -58,5 +56,25 @@ class MatchMarker extends Marker{
 class RegexpMarker extends Marker{
     function mark($response){
         return (preg_match($this->test,$response));
+    }
+}
+
+$markers = [
+    new RegexpMarker("/f.ve/"),
+    new MatchMarker("five"),
+    new MarkLogicMarker('$input equals "five"')
+];
+
+foreach($markers as $marker)
+{
+    print get_class($marker)."\n";
+    $question = new TextQuestion("how many beans make five",$marker);
+    foreach(["five","four"] as $response){
+        print "\tresponse:$response:";
+        if($question->mark($response)){
+            print "well done\n";
+        }else{
+            print "never mind\n";
+        }
     }
 }
